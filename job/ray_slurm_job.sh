@@ -42,7 +42,7 @@ set -x
 
 # Getting the node names
 nodes=$(scontrol show hostnames "$SLURM_JOB_NODELIST")
-nodes_array=("$nodes")
+mapfile -t nodes_array <<< "$nodes"
 
 head_node=${nodes_array[0]}
 head_node_ip=$(srun --nodes=1 --ntasks=1 -w "$head_node" hostname --ip-address)
