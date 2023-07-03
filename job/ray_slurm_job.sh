@@ -8,6 +8,7 @@
 
 # Set path to ray global vars file
 RAY_ENV_PATH="../setup/ray_env.sh"
+RAY_JOB_SCRIPT_PATH="./simple_trainer.py"
 # Must explicity set a temprorary directory and socket paths for ray to use as the default
 # on Discover will be too long and throw an error - "OSError: AF_UNIX path length cannot 
 # exceed 107 bytes:"
@@ -29,6 +30,12 @@ else
         echo "Error sourcing $RAY_ENV_PATH. Exiting."
         exit 1
     fi
+fi
+
+if [[ ! -f "$RAY_JOB_SCRIPT_PATH" ]];
+then
+    echo "${RAY_JOB_SCRIPT_PATH} not found. Exiting."
+    exit 1
 fi
 
 # Load anaconda module - assume we are on Discover
@@ -83,4 +90,4 @@ done
 # __doc_script_start__
 # ray/doc/source/cluster/doc_code/simple-trainer.py
 sleep 30
-python -u simple-trainer.py 
+python -u "$RAY_JOB_SCRIPT_PATH"
