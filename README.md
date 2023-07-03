@@ -20,5 +20,5 @@ variable in `setup/ray_env.sh`.
 After running the inital setup script once, you can run the example Slurm job to start a Ray 
 cluster on Discover.
 
-- cd into the `job` directory wihtin the cloned repo
+- cd into the `job` directory within the cloned repo
 - Run `sbatch ray_slurm_job.sh` to start the Ray cluster and submit a simple Ray job to it
