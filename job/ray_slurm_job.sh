@@ -1,20 +1,18 @@
 #!/bin/bash
 #SBATCH --job-name=rayTest
 #SBATCH --cpus-per-task=4
-#SBATCH --nodes=2
+#SBATCH --nodes=3
 #SBATCH --tasks-per-node=1
 #SBATCH --time=00:05:00
-#SBATCH --account=s2917
 
 # Set path to ray global vars file
 RAY_ENV_PATH="../setup/ray_env.sh"
+RAY_JOB_SCRIPT_PATH="./simple_trainer.py"
 # Must explicity set a temprorary directory and socket paths for ray to use as the default
 # on Discover will be too long and throw an error - "OSError: AF_UNIX path length cannot 
 # exceed 107 bytes:"
 # https://github.com/ray-project/ray/issues/7724
 RAY_TEMP_PATH="${NOBACKUP}/ray/t"
-RAY_TEMP_PLASMA_SOCKET_PATH="${RAY_TEMP_PATH}/p${RANDOM}"
-RAY_TEMP_RAYLET_SOCKET_PATH="${RAY_TEMP_PATH}/r${RANDOM}"
 
 # Check if ray global vars file file exists and source it if it does.
 if [[ ! -f "$RAY_ENV_PATH" ]];
@@ -31,6 +29,12 @@ else
     fi
 fi
 
+if [[ ! -f "$RAY_JOB_SCRIPT_PATH" ]];
+then
+    echo "${RAY_JOB_SCRIPT_PATH} not found. Exiting."
+    exit 1
+fi
+
 # Load anaconda module - assume we are on Discover
 module load anaconda
 conda activate "$RAY_CONDA_ENV_PATH"
@@ -42,7 +46,7 @@ set -x
 
 # Getting the node names
 nodes=$(scontrol show hostnames "$SLURM_JOB_NODELIST")
-nodes_array=("$nodes")
+mapfile -t nodes_array <<< "$nodes"
 
 head_node=${nodes_array[0]}
 head_node_ip=$(srun --nodes=1 --ntasks=1 -w "$head_node" hostname --ip-address)
@@ -71,6 +75,9 @@ worker_num=$((SLURM_JOB_NUM_NODES - 1))
 for ((i = 1; i <= worker_num; i++)); do
     node_i=${nodes_array[$i]}
     echo "Starting WORKER $i at $node_i"
+    # Set temp socket paths for each worker
+    RAY_TEMP_PLASMA_SOCKET_PATH="${RAY_TEMP_PATH}/p${RANDOM}"
+    RAY_TEMP_RAYLET_SOCKET_PATH="${RAY_TEMP_PATH}/r${RANDOM}"
     # Start compute node(s), specify socket paths to avoid long path names
     srun --nodes=1  --ntasks=1 -w "$node_i" \
       ray start --plasma-store-socket-name="${RAY_TEMP_PLASMA_SOCKET_PATH}" \
@@ -83,4 +90,4 @@ done
 # __doc_script_start__
 # ray/doc/source/cluster/doc_code/simple-trainer.py
 sleep 30
-python -u simple-trainer.py 
+python -u "$RAY_JOB_SCRIPT_PATH"
