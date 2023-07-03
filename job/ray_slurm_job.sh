@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=rayTest
 #SBATCH --cpus-per-task=4
-#SBATCH --nodes=3
+#SBATCH --nodes=2
 #SBATCH --tasks-per-node=1
 #SBATCH --time=00:05:00
 #SBATCH --account=s2917
