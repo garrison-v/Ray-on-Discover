@@ -4,7 +4,6 @@
 #SBATCH --nodes=3
 #SBATCH --tasks-per-node=1
 #SBATCH --time=00:05:00
-#SBATCH --account=s2917
 
 # Set path to ray global vars file
 RAY_ENV_PATH="../setup/ray_env.sh"
