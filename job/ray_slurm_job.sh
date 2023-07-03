@@ -90,5 +90,4 @@ done
 # __doc_script_start__
 # ray/doc/source/cluster/doc_code/simple-trainer.py
 sleep 30
-echo ""
 python -u "$RAY_JOB_SCRIPT_PATH"
