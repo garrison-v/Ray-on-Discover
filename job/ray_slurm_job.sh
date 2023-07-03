@@ -14,8 +14,6 @@ RAY_JOB_SCRIPT_PATH="./simple_trainer.py"
 # exceed 107 bytes:"
 # https://github.com/ray-project/ray/issues/7724
 RAY_TEMP_PATH="${NOBACKUP}/ray/t"
-RAY_TEMP_PLASMA_SOCKET_PATH="${RAY_TEMP_PATH}/p${RANDOM}"
-RAY_TEMP_RAYLET_SOCKET_PATH="${RAY_TEMP_PATH}/r${RANDOM}"
 
 # Check if ray global vars file file exists and source it if it does.
 if [[ ! -f "$RAY_ENV_PATH" ]];
@@ -78,6 +76,9 @@ worker_num=$((SLURM_JOB_NUM_NODES - 1))
 for ((i = 1; i <= worker_num; i++)); do
     node_i=${nodes_array[$i]}
     echo "Starting WORKER $i at $node_i"
+    # Set temp socket paths for each worker
+    RAY_TEMP_PLASMA_SOCKET_PATH="${RAY_TEMP_PATH}/p${RANDOM}"
+    RAY_TEMP_RAYLET_SOCKET_PATH="${RAY_TEMP_PATH}/r${RANDOM}"
     # Start compute node(s), specify socket paths to avoid long path names
     srun --nodes=1  --ntasks=1 -w "$node_i" \
       ray start --plasma-store-socket-name="${RAY_TEMP_PLASMA_SOCKET_PATH}" \
@@ -90,4 +91,5 @@ done
 # __doc_script_start__
 # ray/doc/source/cluster/doc_code/simple-trainer.py
 sleep 30
+echo ""
 python -u "$RAY_JOB_SCRIPT_PATH"
